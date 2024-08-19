@@ -30,6 +30,7 @@ export class MessageInputBoxComponent {
         timestamp: this.timestamp 
       });
       this.message = '';
+      this.resetHeight();
     }
   }
 
@@ -44,5 +45,10 @@ export class MessageInputBoxComponent {
     const textarea = this.messageBox.nativeElement;
     textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
+  resetHeight() {
+    const textarea = this.messageBox.nativeElement;
+    textarea.style.height = 'auto';
   }
 }
