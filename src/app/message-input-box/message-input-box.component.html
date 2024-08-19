@@ -3,7 +3,7 @@
         class="w-full h-auto p-4 bg-secondary border-none text-white placeholder-gray-400 focus:outline-none resize-none rounded-l-xl shadow-md"
         maxlength="500"
         [(ngModel)]="message"
-        placeholder="Digite sua mensagem..."
+        placeholder="Type your message..."
         (keydown)="handleKeydown($event)"></textarea>
     <button 
         (click)="sendMessage()"
