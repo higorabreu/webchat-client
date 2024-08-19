@@ -1,6 +1,6 @@
 import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
-import { MessageInputBoxComponent } from '../message-input-box/message-input-box.component';
-import { MessageBoxComponent } from '../message-box/message-box.component';
+import { MessageInputBoxComponent } from '../components/message-input-box/message-input-box.component';
+import { MessageBoxComponent } from '../components/message-box/message-box.component';
 import { CommonModule } from '@angular/common';
 
 export interface Message {
