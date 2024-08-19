@@ -10,5 +10,6 @@ import { CommonModule } from '@angular/common';
 })
 export class MessageBoxComponent {
   @Input() message: string = '';
+  @Input() timestamp: string = '';
   @Input() isSent: boolean = false;
 }

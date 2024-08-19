@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { MessageInputBoxComponent } from '../message-input-box/message-input-box.component';
 import { MessageBoxComponent } from '../message-box/message-box.component';
 import { CommonModule } from '@angular/common';
 
-interface Message {
+export interface Message {
   text: string;
+  timestamp: string;
   sent: boolean;
 }
 
@@ -16,10 +17,24 @@ interface Message {
   styleUrl: './chat.component.css'
 })
 
-export class ChatComponent {
+export class ChatComponent implements AfterViewChecked{
+  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   messages: Message[] = [];
 
-  handleMessageSent(newMessage: string) {
-    this.messages.push({ text: newMessage, sent: true });
+  handleMessageSent(newMessage: { message: string; timestamp: string }) {
+    this.messages.push({ 
+      text: newMessage.message, 
+      timestamp: newMessage.timestamp,
+      sent: true 
+    });
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom(): void {
+    const container = this.messagesContainer.nativeElement;
+    container.scrollTop = container.scrollHeight;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,14 +10,25 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./message-input-box.component.css']
 })
 export class MessageInputBoxComponent {
+  @ViewChild('messageBox') messageBox!: ElementRef;
   message: string = '';
+  timestamp: string = '';
 
-  @Output() messageSent = new EventEmitter<string>();
+  @Output() messageSent = new EventEmitter<{ message: string, timestamp: string }>();
 
   sendMessage() {
     if (this.message.trim()) {
-      console.log('Enviando mensagem:', this.message);
-      this.messageSent.emit(this.message.trim());
+      const now = new Date();
+
+      let hours: string = now.getHours() < 10 ? `${now.getHours()}` : now.getHours().toString();
+      let minutes: string = now.getMinutes() < 10 ? `0${now.getMinutes()}` : now.getMinutes().toString();
+
+      this.timestamp = `${hours}:${minutes}`;
+
+      this.messageSent.emit({ 
+        message: this.message.trim(), 
+        timestamp: this.timestamp 
+      });
       this.message = '';
     }
   }
@@ -27,5 +38,11 @@ export class MessageInputBoxComponent {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  adjustHeight(event?: Event) {
+    const textarea = this.messageBox.nativeElement;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   }
 }

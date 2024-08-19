@@ -2,17 +2,23 @@
     class="flex mb-4" 
     [ngClass]="{ 
         'justify-end': isSent, 
-        'justify-start': !isSent 
-    }">
+        'justify-start': !isSent }">
     <div 
-        class="relative max-w-[50%] p-4 rounded-lg shadow-md" 
+        class="flex flex-col relative max-w-[80%] p-4 rounded-lg shadow-md" 
         [ngClass]="{ 
             'bg-tertiary text-white': isSent, 
             'bg-gray-100 text-black': !isSent,
             'rounded-br-none': isSent, 
-            'rounded-bl-none': !isSent 
-        }"
-    >
+            'rounded-bl-none': !isSent }">
+
         <p class="break-words">{{ message }}</p>
+
+        <div class="flex justify-end">
+            <span 
+            class="text-xs text-white/75">
+            {{ timestamp }}
+            </span>
+        </div>
+
     </div>
 </div>

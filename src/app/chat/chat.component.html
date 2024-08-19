@@ -1,8 +1,9 @@
 <div class="flex flex-col divide-y divide-secondary h-full justify-between">
-    <div class="flex-1 overflow-y-auto p-4">
+    <div class="flex-1 overflow-y-auto p-4 overflow-y-auto scrollbar-thin" #messagesContainer>
         <div *ngFor="let msg of messages">
           <app-message-box 
             [message]="msg.text" 
+            [timestamp]="msg.timestamp"
             [isSent]="msg.sent">
           </app-message-box>
         </div>
