@@ -1,0 +1,10 @@
+<div class="flex mb-4" [ngClass]="{ 'justify-end': isSent, 'justify-start': !isSent }">
+    <div class="relative max-w-xs p-4 rounded-lg shadow-md" [ngClass]="{ 'bg-tertiary text-white': isSent, 'bg-gray-100 text-black': !isSent }">
+        <p>{{ message }}</p>
+        <div class="absolute top-1/2 transform -translate-y-1/2" [ngClass]="{ 'right-[-10px]': isSent, 'left-[-10px]': !isSent }">
+            <div class="w-0 h-0 border-t-5 border-t-transparent border-b-5 border-b-transparent" [ngClass]="{ 'border-l-5 border-l-blue-500': isSent, 'border-r-5 border-r-gray-100': !isSent }">  
+            </div>
+        </div>
+    </div>
+</div>
+  
