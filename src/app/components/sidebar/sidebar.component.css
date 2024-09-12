@@ -1,0 +1,27 @@
+.sidebar {
+    transition: transform 0.3s ease-in-out;
+    position: fixed; /* Para garantir que ela se mantenha na tela */
+    background-color: #1a202c; /* Exemplo de cor para o fundo */
+  }
+  
+  .sidebar.hidden {
+    transform: translateX(-100%); /* Esconde a sidebar para fora da tela */
+  }
+  
+  .sidebar.open {
+    transform: translateX(0); /* Mostra a sidebar */
+  }
+  
+  .sidebar-toggle {
+    cursor: pointer;
+    background: none; /* Remove background padrão do botão */
+    border: none; /* Remove borda padrão do botão */
+  }
+  
+  @media (min-width: 768px) { /* md breakpoint */
+    .sidebar {
+      transform: translateX(0);
+      position: relative; /* Mantém posicionamento normal em telas maiores */
+    }
+  }
+  

@@ -1,1 +1,15 @@
-<p>sidebar works!</p>
+<aside [class.open]="isSidebarOpen" [class.hidden]="!isSidebarOpen && screenSize === 'mobile'" class="sidebar top-0 left-0 h-full w-full text-white transition-transform transform -translate-x-full md:translate-x-0">
+  <button (click)="toggleSidebar()" class="sidebar-toggle md:hidden text-white p-4 flex justify-center">
+      <span class="rotate-90">Chats</span>
+  </button>
+  <div class="h-full overflow-y-auto" *ngIf="isSidebarOpen || screenSize === 'desktop'">
+      <div *ngFor="let conversation of conversations">
+          <app-conversation-item
+              [name]="conversation.name"
+              [username]="conversation.username"
+              [message]="conversation.message"
+              [unread]="conversation.unread">
+          </app-conversation-item>
+      </div>
+  </div>
+</aside>
