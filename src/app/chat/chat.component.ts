@@ -25,7 +25,7 @@ export class ChatComponent implements AfterViewChecked{
     this.messages.push({ 
       text: newMessage.message, 
       timestamp: newMessage.timestamp,
-      sent: true 
+      sent: false 
     });
   }
 

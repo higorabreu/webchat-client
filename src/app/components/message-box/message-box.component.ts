@@ -8,8 +8,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './message-box.component.html',
   styleUrl: './message-box.component.css'
 })
-export class MessageBoxComponent {
+export class MessageBoxComponent{
   @Input() message: string = '';
   @Input() timestamp: string = '';
-  @Input() isSent: boolean = false;
+  @Input() isSent: boolean = true;
 }

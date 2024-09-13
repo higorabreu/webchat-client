@@ -4,7 +4,7 @@
         'justify-end': isSent, 
         'justify-start': !isSent }">
     <div 
-        class="flex flex-col relative max-w-[90%] sm:max-w-[60%] p-4 rounded-lg shadow-md" 
+        class="flex flex-col relative p-4 rounded-lg shadow-md max-w-[90%] sm:max-w-[60%]" 
         [ngClass]="{ 
             'bg-tertiary text-white': isSent, 
             'bg-gray-100 text-black': !isSent,
@@ -13,10 +13,17 @@
 
         <p class="break-words">{{ message }}</p>
 
-        <div class="flex justify-end">
+        <div 
+            class="flex" 
+            [ngClass]="{ 
+                'justify-end': isSent, 
+                'justify-start': !isSent }">
             <span 
-            class="text-xs text-white/75">
-            {{ timestamp }}
+                class="text-xs" 
+                [ngClass]="{
+                    'text-white/75': isSent,
+                    'text-black/50': !isSent }">
+                {{ timestamp }}
             </span>
         </div>
 

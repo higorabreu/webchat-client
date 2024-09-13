@@ -38,7 +38,8 @@ module.exports = {
         'custom-large': ['2.8rem', { lineHeight: '3rem' }],
       },
       screens: {
-        'custom': '925px'
+        'xs': '475px',
+        'sm1': '635px',
       },
     },
   },

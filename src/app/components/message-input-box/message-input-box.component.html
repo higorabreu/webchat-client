@@ -10,7 +10,8 @@
     </textarea>
     <button 
         (click)="sendMessage()"
-        class="flex items-center px-4 py-2 bg-sky-500 hover:bg-lime-500 rounded-r-xl transition-colors duration-300">
+        [disabled]="!message.trim()"
+        class="flex items-center px-4 py-2 bg-sky-500 hover:bg-lime-500 rounded-r-xl transition-colors duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed">
         <img class="w-10 transition-transform duration-300 transform hover:scale-110" src="icons/send.svg" alt="Send Message">
     </button>
 </div>
