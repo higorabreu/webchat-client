@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ConversationItemComponent } from '../../conversation-item/conversation-item.component';
+import { ConversationItemComponent } from '../conversation-item/conversation-item.component';
 import { CommonModule } from '@angular/common';
 
 @Component({

@@ -1,5 +1,5 @@
 <div class="flex flex-col divide-y divide-secondary h-full justify-between">
-    <div class="flex-1 overflow-y-auto p-4 overflow-y-auto scrollbar-thin" #messagesContainer>
+    <div class="flex-1 overflow-y-auto p-4 overflow-y-auto scrollbar-thin bg-quaternary" #messagesContainer>
         <div *ngFor="let msg of messages">
           <app-message-box 
             [message]="msg.text" 

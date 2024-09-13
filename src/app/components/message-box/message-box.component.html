@@ -4,10 +4,10 @@
         'justify-end': isSent, 
         'justify-start': !isSent }">
     <div 
-        class="flex flex-col relative p-4 rounded-lg shadow-md max-w-[90%] sm:max-w-[60%]" 
+        class="flex flex-col relative p-4 rounded-lg shadow-md max-w-[90%] sm:max-w-[60%] text-white" 
         [ngClass]="{ 
-            'bg-tertiary text-white': isSent, 
-            'bg-gray-100 text-black': !isSent,
+            'bg-tertiary': isSent, 
+            'bg-gray-600': !isSent,
             'rounded-br-none': isSent, 
             'rounded-bl-none': !isSent }">
 
@@ -19,10 +19,7 @@
                 'justify-end': isSent, 
                 'justify-start': !isSent }">
             <span 
-                class="text-xs" 
-                [ngClass]="{
-                    'text-white/75': isSent,
-                    'text-black/50': !isSent }">
+                class="text-xs text-white/75">
                 {{ timestamp }}
             </span>
         </div>

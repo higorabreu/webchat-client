@@ -21,6 +21,7 @@ module.exports = {
         'primary': '#1E293B',
         'secondary': '#2D3748',
         'tertiary': '#0EA5E9',
+        'quaternary': '#17202D',
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],  
