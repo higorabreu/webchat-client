@@ -11,13 +11,14 @@
             </h1>
         </div>
   
-        <form class="space-y-6">
+        <form class="space-y-6" (ngSubmit)="register()">
             <div class="flex flex-wrap gap-4">
             <!-- Username Input -->
             <div class="flex-1 min-w-[250px]">
                 <label for="username" class="block text-zinc-300 text-sm">Username</label>
                 <input
-                id="username"
+                name="username"
+                [(ngModel)]="username"
                 type="text"
                 class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
                 placeholder="Enter your username"
@@ -29,7 +30,8 @@
             <div class="flex-1 min-w-[250px]">
                 <label for="full-name" class="block text-zinc-300 text-sm">Full Name</label>
                 <input
-                id="full-name"
+                name="full-name"
+                [(ngModel)]="name"
                 type="text"
                 class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
                 placeholder="Enter your full name"
@@ -43,7 +45,8 @@
             <div class="flex-1 min-w-[250px] md:min-w-[500px]">
                 <label for="email" class="block text-zinc-300 text-sm">Email</label>
                 <input
-                id="email"
+                name="email"
+                [(ngModel)]="email"
                 type="email"
                 class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
                 placeholder="Enter your email"
@@ -57,7 +60,8 @@
             <div class="flex-1 min-w-[250px]">
                 <label for="password" class="block text-zinc-300 text-sm">Password</label>
                 <input
-                id="password"
+                name="password"
+                [(ngModel)]="password"
                 type="password"
                 class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
                 placeholder="Enter your password"
@@ -69,7 +73,8 @@
             <div class="flex-1 min-w-[250px]">
                 <label for="confirm-password" class="block text-zinc-300 text-sm">Confirm Password</label>
                 <input
-                id="confirm-password"
+                name="confirm-password"
+                [(ngModel)]="confirmPassword"
                 type="password"
                 class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
                 placeholder="Confirm your password"
@@ -77,6 +82,9 @@
                 />
             </div>
             </div>
+
+            <p *ngIf="message" class="text-green-500 text-sm">{{ message }}</p>
+            <p *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
     
             <!-- Submit Button -->
             <button
