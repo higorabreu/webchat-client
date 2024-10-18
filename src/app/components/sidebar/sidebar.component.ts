@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { ConversationItemComponent } from '../conversation-item/conversation-item.component';
 import { CommonModule } from '@angular/common';
+import { UserSearchComponent } from '../user-search/user-search.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [ConversationItemComponent, CommonModule],
+  imports: [ConversationItemComponent, CommonModule, UserSearchComponent],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
