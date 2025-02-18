@@ -4,6 +4,8 @@ import { MessageBoxComponent } from '../message-box/message-box.component';
 import { CommonModule } from '@angular/common';
 import { ChatService } from '../../services/chat/chat.service';
 import { getCurrentUserFromToken } from '../../utils/utils';
+import { SharedService } from '../../services/shared/shared.service';
+import { Subscription } from 'rxjs';
 
 export interface Message {
   text: string;
@@ -25,11 +27,23 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
   currentUser: string = '';
   currentChatUser: string = '';
   conversationId: string = '';
+  private userSelectedSubscription!: Subscription;
 
-  constructor(private chatService: ChatService) {}
+  constructor(
+    private chatService: ChatService,
+    private sharedService: SharedService
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = getCurrentUserFromToken();
+    this.userSelectedSubscription = this.sharedService.userSelected$.subscribe((username) => {
+      this.startNewChat(username);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.chatService.disconnect();
+    this.userSelectedSubscription.unsubscribe();
   }
 
   startNewChat(recipient: string): void {
@@ -58,10 +72,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
   private scrollToBottom(): void {
     const container = this.messagesContainer.nativeElement;
     container.scrollTop = container.scrollHeight;
-  }
-
-  ngOnDestroy(): void {
-      this.chatService.disconnect();
   }
 
   private getConversationId(sender: string, recipient: string): string {

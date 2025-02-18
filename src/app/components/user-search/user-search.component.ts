@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { UserService } from '../../services/user/user.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SharedService } from '../../services/shared/shared.service';
 
 @Component({
   selector: 'app-user-search',
@@ -16,7 +17,10 @@ export class UserSearchComponent {
 
   @Output() userSelected = new EventEmitter<string>();
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private sharedService: SharedService
+  ) {}
 
   selectUser() {
     if (this.username.trim()) {
@@ -24,7 +28,7 @@ export class UserSearchComponent {
         (exists) => {
           this.userExists = exists;
           if (exists) {
-            this.userSelected.emit(this.username); 
+            this.sharedService.selectUser(this.username);
             this.resetInput();
             console.log('Usuário encontrado.');
           } else {

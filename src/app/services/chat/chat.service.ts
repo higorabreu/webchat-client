@@ -1,6 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
-import SockJS from 'sockjs-client';
 import * as Stomp from '@stomp/stompjs';
 
 @Injectable({
@@ -9,6 +8,7 @@ import * as Stomp from '@stomp/stompjs';
 export class ChatService implements OnDestroy {
   private stompClient: Stomp.Client | null = null;
   private messagesSubject: Subject<any> = new Subject<any>();
+  private token: string | null = localStorage.getItem('token');
 
   constructor() {}
 
@@ -19,25 +19,29 @@ export class ChatService implements OnDestroy {
     }
 
     this.stompClient = new Stomp.Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-      reconnectDelay: 5000,
-      debug: (str: string) => console.log(str),
-      connectHeaders: {},
-      onConnect: () => {
-        console.log('Conectado ao WebSocket');
-        this.subscribeToMessages(user, conversationId);
+      brokerURL: 'ws://localhost:8080/ws',
+      connectHeaders: {
+        Authorization: `Bearer ${this.token}`
       },
-      onStompError: (frame: any) => {
-        console.error('Erro STOMP', frame);
+      onConnect: () => {
+        console.log('Conectado ao WebSocket.');
+        this.subscribeToMessages(conversationId);
+      },
+      onStompError: (frame) => {
+        console.error('Erro ao conectar ao WebSocket:', frame);
+      },
+      onWebSocketError: (event) => {
+        console.error('Erro ao conectar ao WebSocket:', event);
       },
     });
 
     this.stompClient.activate();
   }
 
-  private subscribeToMessages(user: string, conversationId: string): void {
-    const destination = `/user/${user}/queue/messages/${conversationId}`;
+  private subscribeToMessages(conversationId: string): void {
+    const destination = `/user/queue/messages/${conversationId}`;
     this.stompClient?.subscribe(destination, (message: any) => {
+      console.log('Mensagem recebida:', message.body);
       this.messagesSubject.next(JSON.parse(message.body));
     });
   }
