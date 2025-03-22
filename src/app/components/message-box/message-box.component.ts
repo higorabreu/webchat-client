@@ -12,4 +12,5 @@ export class MessageBoxComponent{
   @Input() message: string = '';
   @Input() timestamp: string = '';
   @Input() isSent: boolean = true;
+  @Input() status: 'sending' | 'sent' | 'delivered' = 'sent';
 }

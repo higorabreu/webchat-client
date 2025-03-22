@@ -15,6 +15,7 @@ export class ChatService implements OnDestroy {
   connect(user: string, conversationId: string): void {
     if (this.stompClient && this.stompClient.connected) {
       console.log('Já conectado ao WebSocket.');
+      this.subscribeToMessages(conversationId);
       return;
     }
 
@@ -39,27 +40,47 @@ export class ChatService implements OnDestroy {
   }
 
   private subscribeToMessages(conversationId: string): void {
+    if (!this.stompClient?.connected) {
+      console.error('Não é possível se inscrever: WebSocket não está conectado.');
+      return;
+    }
+    
     const destination = `/user/queue/messages/${conversationId}`;
-    this.stompClient?.subscribe(destination, (message: any) => {
+    console.log(`Inscrevendo-se em: ${destination}`);
+    
+    this.stompClient.subscribe(destination, (message: any) => {
       console.log('Mensagem recebida:', message.body);
-      this.messagesSubject.next(JSON.parse(message.body));
+      try {
+        const parsedMessage = JSON.parse(message.body);
+        this.messagesSubject.next(parsedMessage);
+      } catch (error) {
+        console.error('Erro ao processar mensagem recebida:', error);
+      }
     });
   }
 
-  sendMessage(user: string, recipient: string, message: string): void {
-    if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.publish({
-        destination: '/app/chat.send',
-        body: JSON.stringify({
-          sender: user,
-          recipient: recipient,
-          text: message,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-    } else {
+  sendMessage(sender: string, recipient: string, text: string): void {
+    if (!this.stompClient?.connected) {
       console.error('WebSocket não está conectado.');
+      return;
     }
+    
+    const message = {
+      sender: sender,
+      recipient: recipient,
+      content: text,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('Enviando mensagem:', message);
+    
+    this.stompClient.publish({
+      destination: '/app/chat.send',
+      headers: {
+        Authorization: `Bearer ${this.token}`
+      },
+      body: JSON.stringify(message),
+    });
   }
 
   getMessages(): Observable<any> {
