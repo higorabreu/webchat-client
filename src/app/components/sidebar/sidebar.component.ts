@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ConversationItemComponent } from '../conversation-item/conversation-item.component';
 import { CommonModule } from '@angular/common';
 import { UserSearchComponent } from '../user-search/user-search.component';
+import { ChatService, Conversation } from '../../services/chat/chat.service';
+import { getCurrentUserFromToken } from '../../utils/utils';
+import { Subscription, interval } from 'rxjs';
+import { SharedService } from '../../services/shared/shared.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,12 +14,68 @@ import { UserSearchComponent } from '../user-search/user-search.component';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent {
-  conversations = [
-    { name: 'Ana Maria', username: '@ana_maria', message: 'Tirar a lixo da sala', unread: true },
-    { name: 'Joao Carlos', username: '@carlosjoao', message: 'Reunião às 15:00', unread: true },
-    { name: 'Pedro Afonso', username: '@pedrinhoa', message: 'Vamos ao cinema?', unread: true },
-    { name: 'Beatriz', username: '@beatriz_123', message: 'Revisar o relatório', unread: false },
-    { name: 'Carlos Padilha', username: '@carlinhopad', message: 'Aniversário do papai!', unread: false }
-  ];
+export class SidebarComponent implements OnInit, OnDestroy {
+  conversations: Conversation[] = [];
+  currentUsername: string = '';
+  private refreshSubscription?: Subscription;
+  private messageSubscription?: Subscription;
+  private userSelectedSubscription?: Subscription;
+  
+  constructor(
+    private chatService: ChatService,
+    private sharedService: SharedService
+  ) {}
+  
+  ngOnInit(): void {
+    this.currentUsername = getCurrentUserFromToken();
+    
+    if (this.currentUsername) {
+      this.loadConversations();
+      
+      this.refreshSubscription = interval(5000).subscribe(() => {
+        this.loadConversations();
+      });
+      
+      this.messageSubscription = this.chatService.getMessages().subscribe((message) => {
+        this.chatService.clearConversationsCache(this.currentUsername);
+        this.loadConversations();
+      });
+      
+      this.userSelectedSubscription = this.sharedService.userSelected$.subscribe(() => {
+        setTimeout(() => {
+          this.chatService.clearConversationsCache(this.currentUsername);
+          this.loadConversations();
+        }, 500);
+      });
+    }
+  }
+  
+  ngOnDestroy(): void {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
+    if (this.messageSubscription) {
+      this.messageSubscription.unsubscribe();
+    }
+    if (this.userSelectedSubscription) {
+      this.userSelectedSubscription.unsubscribe();
+    }
+  }
+  
+  loadConversations(): void {
+    if (!this.currentUsername) return;
+    
+    this.chatService.getUserConversations(this.currentUsername).subscribe({
+      next: (conversations) => {
+        this.conversations = conversations;
+      },
+      error: (error) => {
+        console.error('Erro ao buscar conversas:', error);
+      }
+    });
+  }
+  
+  selectConversation(conversation: Conversation): void {
+    this.sharedService.selectUser(conversation.username);
+  }
 }

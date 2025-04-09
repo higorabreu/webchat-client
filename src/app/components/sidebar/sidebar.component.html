@@ -5,8 +5,9 @@
           <app-conversation-item
               [name]="conversation.name"
               [username]="conversation.username"
-              [message]="conversation.message"
-              [unread]="conversation.unread">
+              [message]="conversation.lastMessage"
+              [unread]="conversation.unread"
+              (itemClicked)="selectConversation(conversation)">
           </app-conversation-item>
       </div>
   </div>

@@ -1,6 +1,18 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import * as Stomp from '@stomp/stompjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { getCurrentUserId } from '../../utils/utils';
+
+export interface Conversation {
+  id: string;
+  userId: string;
+  username: string;
+  name: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unread: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +21,10 @@ export class ChatService implements OnDestroy {
   private stompClient: Stomp.Client | null = null;
   private messagesSubject: Subject<any> = new Subject<any>();
   private token: string | null = localStorage.getItem('token');
+  private apiUrl: string = 'http://localhost:8080';
+  private conversationsCache: Map<string, Conversation[]> = new Map();
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   connect(user: string, conversationId: string): void {
     if (this.stompClient && this.stompClient.connected) {
@@ -65,11 +79,14 @@ export class ChatService implements OnDestroy {
       return;
     }
     
+    // Enviar o timezone atual do cliente para o servidor
     const message = {
       sender: sender,
       recipient: recipient,
       content: text,
-      timestamp: new Date().toISOString()
+      senderUsername: sender,
+      recipientUsername: recipient,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Obtém o timezone do navegador
     };
     
     console.log('Enviando mensagem:', message);
@@ -86,6 +103,70 @@ export class ChatService implements OnDestroy {
   getMessages(): Observable<any> {
     return this.messagesSubject.asObservable();
   }
+  
+  fetchMessageHistory(user1: string, user2: string): Observable<any[]> {
+    const currentUserId = getCurrentUserId();
+    
+    if (!currentUserId) {
+      console.error('ID do usuário não encontrado no token.');
+      return new Observable(subscriber => subscriber.complete());
+    }
+    
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
+    
+    return this.http.get<any[]>(`${this.apiUrl}/messages`, {
+      headers: headers,
+      params: {
+        user1Id: currentUserId,
+        user2Id: user2
+      }
+    });
+  }
+  
+  getUserConversations(username: string): Observable<Conversation[]> {
+    if (this.conversationsCache.has(username)) {
+      return new Observable(subscriber => {
+        subscriber.next(this.conversationsCache.get(username));
+        subscriber.complete();
+      });
+    }
+    
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
+    
+    return new Observable(subscriber => {
+      this.http.get<Conversation[]>(`${this.apiUrl}/conversations/${username}`, { headers }).subscribe({
+        next: (conversations) => {
+          this.conversationsCache.set(username, conversations);
+          subscriber.next(conversations);
+          subscriber.complete();
+        },
+        error: (error) => {
+          console.error('Erro ao buscar conversas:', error);
+          subscriber.error(error);
+        }
+      });
+    });
+  }
+  
+  markMessagesAsRead(conversationId: string, currentUserId: string): Observable<any> {
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
+    
+    return this.http.post<any>(`${this.apiUrl}/messages/read`, null, {
+      headers: headers,
+      params: {
+        conversationId: conversationId,
+        userId: currentUserId
+      }
+    });
+  }
+
+  clearConversationsCache(username?: string): void {
+    if (username) {
+      this.conversationsCache.delete(username);
+    } else {
+      this.conversationsCache.clear();
+    }
+  }
 
   disconnect(): void {
     if (this.stompClient) {
@@ -96,5 +177,11 @@ export class ChatService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.disconnect();
+  }
+
+  generateConversationId(user1: string, user2: string): string {
+    return user1.localeCompare(user2) < 0 ? 
+      `${user1}-${user2}` : 
+      `${user2}-${user1}`;
   }
 }

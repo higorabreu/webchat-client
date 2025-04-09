@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-conversation-item',
@@ -13,4 +13,9 @@ export class ConversationItemComponent {
   @Input() username!: string;
   @Input() message!: string;
   @Input() unread!: boolean;
+  @Output() itemClicked = new EventEmitter<void>();
+  
+  onClick(): void {
+    this.itemClicked.emit();
+  }
 }

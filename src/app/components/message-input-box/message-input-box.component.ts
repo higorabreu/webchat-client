@@ -19,11 +19,7 @@ export class MessageInputBoxComponent {
   sendMessage() {
     if (this.message.trim()) {
       const now = new Date();
-
-      let hours: string = now.getHours() < 10 ? `${now.getHours()}` : now.getHours().toString();
-      let minutes: string = now.getMinutes() < 10 ? `0${now.getMinutes()}` : now.getMinutes().toString();
-
-      this.timestamp = `${hours}:${minutes}`;
+      this.timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       this.messageSent.emit({ 
         message: this.message.trim(), 

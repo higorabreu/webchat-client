@@ -1,14 +1,48 @@
 import { jwtDecode } from "jwt-decode";
 
-export function getCurrentUserFromToken():  string {
-  const token = localStorage.getItem('token');
-  if (!token) return '';
+interface JwtPayload {
+  sub: string;  // subject (username)
+  id: string;   // id
+  name: string; // name
+  exp: number;  // expiration
+  iat: number;  // issued at
+}
 
-  try {
-    const decodedToken: any = jwtDecode(token);
-    return decodedToken.sub || '';
-  } catch (error) {
-    console.error('Erro ao decodificar o token:', error);
-    return '';
-  }
+export function getCurrentUserFromToken(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+
+    try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        return decoded.sub || '';
+    } catch (e) {
+        console.error('Erro ao decodificar token:', e);
+        return '';
+    }
+}
+
+export function getCurrentUserId(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+
+    try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        return decoded.id || '';
+    } catch (e) {
+        console.error('Erro ao decodificar token:', e);
+        return '';
+    }
+}
+
+export function getUserNameFromToken(): string {
+    const token = localStorage.getItem('token');
+    if (!token) return '';
+
+    try {
+        const decoded = jwtDecode<JwtPayload>(token);
+        return decoded.name || '';
+    } catch (e) {
+        console.error('Erro ao decodificar token:', e);
+        return '';
+    }
 }
