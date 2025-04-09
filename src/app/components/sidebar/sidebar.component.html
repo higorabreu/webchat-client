@@ -3,11 +3,10 @@
     <div class="overflow-y-auto">
       <div *ngFor="let conversation of conversations">
           <app-conversation-item
-              [name]="conversation.name"
-              [username]="conversation.username"
-              [message]="conversation.lastMessage"
-              [unread]="conversation.unread"
-              (itemClicked)="selectConversation(conversation)">
+              [conversation]="conversation"
+              [isActive]="conversation.username === activeConversationUsername"
+              (itemClicked)="selectConversation(conversation)"
+              (messageReceived)="sortConversations()">
           </app-conversation-item>
       </div>
   </div>

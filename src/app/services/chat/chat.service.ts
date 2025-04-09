@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import * as Stomp from '@stomp/stompjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { getCurrentUserId } from '../../utils/utils';
+import { getCurrentUserId, getCurrentUserFromToken } from '../../utils/utils';
 
 export interface Conversation {
   id: string;
@@ -11,6 +11,7 @@ export interface Conversation {
   name: string;
   lastMessage: string;
   lastMessageTime: string;
+  lastMessageSenderUsername?: string;
   unread: boolean;
 }
 
@@ -23,13 +24,14 @@ export class ChatService implements OnDestroy {
   private token: string | null = localStorage.getItem('token');
   private apiUrl: string = 'http://localhost:8080';
   private conversationsCache: Map<string, Conversation[]> = new Map();
+  private activeSubscriptions: Set<string> = new Set();
+  private isConnected: boolean = false;
 
   constructor(private http: HttpClient) {}
 
-  connect(user: string, conversationId: string): void {
+  connect(user: string): void {
     if (this.stompClient && this.stompClient.connected) {
-      console.log('Já conectado ao WebSocket.');
-      this.subscribeToMessages(conversationId);
+      this.isConnected = true;
       return;
     }
 
@@ -39,8 +41,7 @@ export class ChatService implements OnDestroy {
         Authorization: `Bearer ${this.token}`
       },
       onConnect: () => {
-        console.log('Conectado ao WebSocket.');
-        this.subscribeToMessages(conversationId);
+        this.isConnected = true;
       },
       onStompError: (frame) => {
         console.error('Erro ao conectar ao WebSocket:', frame);
@@ -53,43 +54,71 @@ export class ChatService implements OnDestroy {
     this.stompClient.activate();
   }
 
+  connectToConversation(conversationId: string): void {
+    if (!conversationId) {
+      return;
+    }
+
+    if (!this.stompClient || !this.stompClient.connected) {
+      const currentUser = getCurrentUserFromToken();
+      if (currentUser) {
+        this.connect(currentUser);
+      
+        setTimeout(() => {
+          this.subscribeToMessages(conversationId);
+        }, 1000);
+      }
+      return;
+    }
+
+    this.subscribeToMessages(conversationId);
+  }
+
   private subscribeToMessages(conversationId: string): void {
     if (!this.stompClient?.connected) {
-      console.error('Não é possível se inscrever: WebSocket não está conectado.');
+      return;
+    }
+    
+    if (this.activeSubscriptions.has(conversationId)) {
       return;
     }
     
     const destination = `/user/queue/messages/${conversationId}`;
-    console.log(`Inscrevendo-se em: ${destination}`);
     
     this.stompClient.subscribe(destination, (message: any) => {
-      console.log('Mensagem recebida:', message.body);
-      try {
-        const parsedMessage = JSON.parse(message.body);
-        this.messagesSubject.next(parsedMessage);
-      } catch (error) {
-        console.error('Erro ao processar mensagem recebida:', error);
+      const parsedMessage = JSON.parse(message.body);
+      parsedMessage.conversationId = conversationId;
+      this.messagesSubject.next(parsedMessage);
+    });
+    
+    this.activeSubscriptions.add(conversationId);
+  }
+
+  subscribeToAllConversations(conversations: Conversation[]): void {
+    if (!this.isConnected) {
+      return;
+    }
+    
+    conversations.forEach(conversation => {
+      if (conversation.id) {
+        this.subscribeToMessages(conversation.id);
       }
     });
   }
 
   sendMessage(sender: string, recipient: string, text: string): void {
     if (!this.stompClient?.connected) {
-      console.error('WebSocket não está conectado.');
       return;
     }
     
-    // Enviar o timezone atual do cliente para o servidor
     const message = {
       sender: sender,
       recipient: recipient,
       content: text,
       senderUsername: sender,
       recipientUsername: recipient,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone // Obtém o timezone do navegador
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
-    
-    console.log('Enviando mensagem:', message);
     
     this.stompClient.publish({
       destination: '/app/chat.send',
@@ -108,7 +137,6 @@ export class ChatService implements OnDestroy {
     const currentUserId = getCurrentUserId();
     
     if (!currentUserId) {
-      console.error('ID do usuário não encontrado no token.');
       return new Observable(subscriber => subscriber.complete());
     }
     
@@ -141,13 +169,12 @@ export class ChatService implements OnDestroy {
           subscriber.complete();
         },
         error: (error) => {
-          console.error('Erro ao buscar conversas:', error);
           subscriber.error(error);
         }
       });
     });
   }
-  
+
   markMessagesAsRead(conversationId: string, currentUserId: string): Observable<any> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
     
@@ -171,17 +198,12 @@ export class ChatService implements OnDestroy {
   disconnect(): void {
     if (this.stompClient) {
       this.stompClient.deactivate();
-      console.log('Desconectado do WebSocket');
+      this.activeSubscriptions.clear();
+      this.isConnected = false;
     }
   }
 
   ngOnDestroy(): void {
     this.disconnect();
-  }
-
-  generateConversationId(user1: string, user2: string): string {
-    return user1.localeCompare(user2) < 0 ? 
-      `${user1}-${user2}` : 
-      `${user2}-${user1}`;
   }
 }

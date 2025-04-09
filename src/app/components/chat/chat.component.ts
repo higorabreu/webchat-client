@@ -24,7 +24,7 @@ export interface Message {
   styleUrl: './chat.component.css'
 })
 
-export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
+export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   messages: Message[] = [];
   currentUser: string = '';
@@ -42,15 +42,21 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
 
   ngOnInit(): void {
     this.currentUser = getCurrentUserFromToken();
+    this.chatService.connect(this.currentUser);
+    
     this.userSelectedSubscription = this.sharedService.userSelected$.subscribe((username) => {
       this.startNewChat(username);
     });
     
     this.messagesSubscription = this.chatService.getMessages().subscribe(message => {
-      console.log('Mensagem recebida do servidor:', message);
+      
+      const isCurrentConversation = this.isMessageForCurrentConversation(message);
+      
+      if (!isCurrentConversation) {
+        return;
+      }
       
       const formattedTime = this.formatMessageTime(message.timestamp);
-      
       const isSender = message.senderUsername === this.currentUser;
       
       if (isSender) {
@@ -60,7 +66,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
           this.messages[messageIndex].id = message.id?.toString();
           this.messages[messageIndex].timestamp = formattedTime;
           this.messages[messageIndex].status = 'delivered';
-          console.log('Mensagem atualizada com dados do servidor:', this.messages[messageIndex]);
         } else {
           this.addNewMessage(message.content, formattedTime, true, 'delivered', message.id?.toString());
         }
@@ -77,21 +82,34 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
   }
 
   ngOnDestroy(): void {
-    this.chatService.disconnect();
-    this.userSelectedSubscription.unsubscribe();
+    if (this.userSelectedSubscription) {
+      this.userSelectedSubscription.unsubscribe();
+    }
     if (this.messagesSubscription) {
       this.messagesSubscription.unsubscribe();
     }
   }
+  
+  private isMessageForCurrentConversation(message: any): boolean {
+    if (!this.currentChatUser || !message) {
+      return false;
+    }
+    
+    if (message.conversationId && message.conversationId === this.conversationId) {
+      return true;
+    }
+    
+    const isBetweenCurrentUsers = 
+      (message.senderUsername === this.currentUser && message.recipientUsername === this.currentChatUser) || 
+      (message.senderUsername === this.currentChatUser && message.recipientUsername === this.currentUser);
+    
+    return isBetweenCurrentUsers;
+  }
 
   startNewChat(recipient: string): void {
+    if (!recipient) return;
     this.currentChatUser = recipient;
-    this.conversationId = this.chatService.generateConversationId(this.currentUser, recipient);
     this.messages = [];
-    this.chatService.connect(this.currentUser, this.conversationId);
-
-    console.log('Chat started with: ', recipient);
-    
     this.loadMessageHistory(recipient);
   }
   
@@ -105,9 +123,20 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
         if (conversation) {
           this.currentConversationData = conversation;
           
+          if (conversation.id) {
+            this.conversationId = conversation.id;
+            this.chatService.connectToConversation(conversation.id);
+          }
+          
           this.chatService.fetchMessageHistory(this.currentUser, conversation.userId).subscribe({
             next: (messages) => {
               this.messages = [];
+              
+              if (messages.length > 0 && messages[0].conversationId && 
+                  this.conversationId !== messages[0].conversationId) {
+                this.conversationId = messages[0].conversationId;
+                this.chatService.connectToConversation(messages[0].conversationId);
+              }
               
               messages.forEach(message => {
                 const formattedTime = this.formatMessageTime(message.timestamp);
@@ -125,7 +154,9 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
               this.loading = false;
               setTimeout(() => this.scrollToBottom(), 0);
               
-              this.markMessagesAsRead();
+              if (conversation.unread) {
+                this.markMessagesAsRead();
+              }
             },
             error: (error) => {
               console.error('Erro ao carregar histórico de mensagens:', error);
@@ -133,7 +164,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
             }
           });
         } else {
-          console.log('Conversa não encontrada no histórico, criando nova conversa');
           this.messages = [];
           this.currentConversationData = null;
           this.loading = false;
@@ -231,17 +261,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy{
     }
     
     this.chatService.markMessagesAsRead(this.currentConversationData.id, currentUserId)
-      .subscribe({
-        next: (response) => {
-          if (response.success && response.markedCount > 0) {
-            console.log(`${response.markedCount} mensagens marcadas como lidas`);
-            this.chatService.clearConversationsCache(this.currentUser);
-          }
-        },
-        error: (error) => {
-          console.error('Erro ao marcar mensagens como lidas:', error);
-        }
-      });
   }
 
   private getCurrentTimeFormatted(): string {

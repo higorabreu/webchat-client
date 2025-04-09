@@ -3,8 +3,8 @@ import { ConversationItemComponent } from '../conversation-item/conversation-ite
 import { CommonModule } from '@angular/common';
 import { UserSearchComponent } from '../user-search/user-search.component';
 import { ChatService, Conversation } from '../../services/chat/chat.service';
-import { getCurrentUserFromToken } from '../../utils/utils';
-import { Subscription, interval } from 'rxjs';
+import { getCurrentUserFromToken, getCurrentUserId } from '../../utils/utils';
+import { Subscription } from 'rxjs';
 import { SharedService } from '../../services/shared/shared.service';
 
 @Component({
@@ -17,8 +17,7 @@ import { SharedService } from '../../services/shared/shared.service';
 export class SidebarComponent implements OnInit, OnDestroy {
   conversations: Conversation[] = [];
   currentUsername: string = '';
-  private refreshSubscription?: Subscription;
-  private messageSubscription?: Subscription;
+  activeConversationUsername: string | null = null;
   private userSelectedSubscription?: Subscription;
   
   constructor(
@@ -30,33 +29,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.currentUsername = getCurrentUserFromToken();
     
     if (this.currentUsername) {
+      this.chatService.connect(this.currentUsername);
+      
       this.loadConversations();
       
-      this.refreshSubscription = interval(5000).subscribe(() => {
-        this.loadConversations();
-      });
-      
-      this.messageSubscription = this.chatService.getMessages().subscribe((message) => {
-        this.chatService.clearConversationsCache(this.currentUsername);
-        this.loadConversations();
-      });
-      
-      this.userSelectedSubscription = this.sharedService.userSelected$.subscribe(() => {
-        setTimeout(() => {
-          this.chatService.clearConversationsCache(this.currentUsername);
-          this.loadConversations();
-        }, 500);
+      this.userSelectedSubscription = this.sharedService.userSelected$.subscribe((username) => {
+        this.activeConversationUsername = username;
       });
     }
   }
   
   ngOnDestroy(): void {
-    if (this.refreshSubscription) {
-      this.refreshSubscription.unsubscribe();
-    }
-    if (this.messageSubscription) {
-      this.messageSubscription.unsubscribe();
-    }
     if (this.userSelectedSubscription) {
       this.userSelectedSubscription.unsubscribe();
     }
@@ -68,6 +51,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.chatService.getUserConversations(this.currentUsername).subscribe({
       next: (conversations) => {
         this.conversations = conversations;
+        this.sortConversations();
       },
       error: (error) => {
         console.error('Erro ao buscar conversas:', error);
@@ -75,7 +59,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
     });
   }
   
+  sortConversations(): void {
+    this.conversations.sort((a, b) => {
+      const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+      const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+      return timeB - timeA;
+    });
+  }
+  
   selectConversation(conversation: Conversation): void {
+    this.activeConversationUsername = conversation.username;
     this.sharedService.selectUser(conversation.username);
+    
+    this.markMessagesAsRead(conversation);
+  }
+  
+  private markMessagesAsRead(conversation: Conversation): void {
+    if (!conversation || !conversation.unread) return;
+    
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      console.error('ID do usuário não encontrado no token');
+      return;
+    }
+    
+    this.chatService.markMessagesAsRead(conversation.id, currentUserId)
   }
 }

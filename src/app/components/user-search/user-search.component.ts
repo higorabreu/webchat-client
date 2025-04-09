@@ -27,16 +27,10 @@ export class UserSearchComponent {
       this.userService.userExists(this.username).subscribe(
         (exists) => {
           this.userExists = exists;
-          if (exists) {
-            this.sharedService.selectUser(this.username);
-            this.resetInput();
-            console.log('Usuário encontrado.');
-          } else {
-            console.log('Usuário não encontrado.');
-          }
+          this.sharedService.selectUser(this.username);
+          this.resetInput();
         },
         (error) => {
-          console.error('Erro ao verificar usuário:', error);
           this.userExists = null;
         }
       );
