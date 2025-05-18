@@ -55,7 +55,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.sortConversations();
       },
       error: error => {
-        console.error('Erro ao buscar conversas:', error);
+        console.warn('Error fetching conversations:', error);
       },
     });
   }
@@ -84,7 +84,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
-      console.error('ID do usuário não encontrado no token');
       return;
     }
 

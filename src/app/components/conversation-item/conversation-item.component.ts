@@ -39,7 +39,7 @@ export class ConversationItemComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateDisplayData();
-    this.connectToWebSocket();
+    this.connectToMessages();
   }
 
   ngOnDestroy(): void {
@@ -57,7 +57,7 @@ export class ConversationItemComponent implements OnInit, OnDestroy {
       this.conversation.lastMessageSenderUsername === this.currentUser;
   }
 
-  private connectToWebSocket(): void {
+  private connectToMessages(): void {
     this.messageSubscription = this.chatService
       .getMessages()
       .subscribe(message => {
@@ -98,7 +98,6 @@ export class ConversationItemComponent implements OnInit, OnDestroy {
     }
 
     this.updateDisplayData();
-
     this.messageReceived.emit();
   }
 

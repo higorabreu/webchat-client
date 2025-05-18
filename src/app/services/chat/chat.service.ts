@@ -1,8 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
-import * as Stomp from '@stomp/stompjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { getCurrentUserId, getCurrentUserFromToken } from '../../utils/utils';
+import { WebSocketService } from '../websocket/websocket.service';
 
 export interface Conversation {
   id: string;
@@ -19,33 +19,22 @@ export interface Conversation {
   providedIn: 'root',
 })
 export class ChatService implements OnDestroy {
-  private stompClient: Stomp.Client | null = null;
   private messagesSubject: Subject<any> = new Subject<any>();
   private token: string | null = localStorage.getItem('token');
   private apiUrl: string = 'http://localhost:8080';
   private conversationsCache: Map<string, Conversation[]> = new Map();
-  private activeSubscriptions: Set<string> = new Set();
-  private isConnected: boolean = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private webSocketService: WebSocketService,
+  ) {
+    this.webSocketService.getMessages().subscribe(message => {
+      this.messagesSubject.next(message);
+    });
+  }
 
   connect(): void {
-    if (this.stompClient && this.stompClient.connected) {
-      this.isConnected = true;
-      return;
-    }
-
-    this.stompClient = new Stomp.Client({
-      brokerURL: 'ws://localhost:8080/ws',
-      connectHeaders: {
-        Authorization: `Bearer ${this.token}`,
-      },
-      onConnect: () => {
-        this.isConnected = true;
-      },
-    });
-
-    this.stompClient.activate();
+    this.webSocketService.connect();
   }
 
   connectToConversation(conversationId: string): void {
@@ -53,55 +42,10 @@ export class ChatService implements OnDestroy {
       return;
     }
 
-    if (!this.stompClient || !this.stompClient.connected) {
-      this.connect();
-
-      setTimeout(() => {
-        this.subscribeToMessages(conversationId);
-      }, 1000);
-    }
-    return;
-
-    this.subscribeToMessages(conversationId);
-  }
-
-  private subscribeToMessages(conversationId: string): void {
-    if (!this.stompClient?.connected) {
-      return;
-    }
-
-    if (this.activeSubscriptions.has(conversationId)) {
-      return;
-    }
-
-    const destination = `/user/queue/messages/${conversationId}`;
-
-    this.stompClient.subscribe(destination, (message: any) => {
-      const parsedMessage = JSON.parse(message.body);
-      parsedMessage.conversationId = conversationId;
-      this.messagesSubject.next(parsedMessage);
-    });
-
-    this.activeSubscriptions.add(conversationId);
-  }
-
-  subscribeToAllConversations(conversations: Conversation[]): void {
-    if (!this.isConnected) {
-      return;
-    }
-
-    conversations.forEach(conversation => {
-      if (conversation.id) {
-        this.subscribeToMessages(conversation.id);
-      }
-    });
+    this.webSocketService.subscribeToMessages(conversationId);
   }
 
   sendMessage(sender: string, recipient: string, text: string): void {
-    if (!this.stompClient?.connected) {
-      return;
-    }
-
     const message = {
       sender: sender,
       recipient: recipient,
@@ -111,13 +55,7 @@ export class ChatService implements OnDestroy {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
 
-    this.stompClient.publish({
-      destination: '/app/chat.send',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-      body: JSON.stringify(message),
-    });
+    this.webSocketService.sendMessage(message);
   }
 
   getMessages(): Observable<any> {
@@ -202,15 +140,7 @@ export class ChatService implements OnDestroy {
     }
   }
 
-  disconnect(): void {
-    if (this.stompClient) {
-      this.stompClient.deactivate();
-      this.activeSubscriptions.clear();
-      this.isConnected = false;
-    }
-  }
-
   ngOnDestroy(): void {
-    this.disconnect();
+    this.webSocketService.disconnect();
   }
 }

@@ -200,10 +200,7 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
                 }
               },
               error: error => {
-                console.error(
-                  'Erro ao carregar histórico de mensagens:',
-                  error,
-                );
+                console.warn('Error loading message history:', error);
                 this.loading = false;
               },
             });
@@ -214,7 +211,7 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
         }
       },
       error: error => {
-        console.error('Erro ao buscar informações da conversa:', error);
+        console.warn('Error fetching conversation information:', error);
         this.loading = false;
       },
     });
@@ -307,7 +304,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
         minute: '2-digit',
       });
     } catch (e) {
-      console.error('Erro ao formatar timestamp:', e);
       return this.getCurrentTimeFormatted();
     }
   }
@@ -317,7 +313,6 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
 
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
-      console.error('ID do usuário não encontrado no token');
       return;
     }
 
