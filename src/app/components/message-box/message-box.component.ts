@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-message-box',
   standalone: true,
-  imports: [ CommonModule ],
+  imports: [CommonModule],
   templateUrl: './message-box.component.html',
-  styleUrl: './message-box.component.css'
+  styleUrl: './message-box.component.css',
 })
-export class MessageBoxComponent{
+export class MessageBoxComponent {
   @Input() message: string = '';
   @Input() timestamp: string = '';
   @Input() isSent: boolean = true;

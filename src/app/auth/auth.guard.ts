@@ -6,13 +6,12 @@ import { catchError, map, defaultIfEmpty, first } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   canActivate(): Promise<boolean> {
@@ -25,10 +24,11 @@ export class AuthGuard implements CanActivate {
     }
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
 
-    return this.authService.isTokenValid(username, headers)
+    return this.authService
+      .isTokenValid(username, headers)
       .pipe(
         first(),
         map(isValid => {
@@ -41,8 +41,8 @@ export class AuthGuard implements CanActivate {
         catchError(() => {
           this.router.navigate(['/login']);
           return of(false);
-        })
+        }),
       )
       .toPromise() as Promise<boolean>;
-    }
+  }
 }

@@ -8,9 +8,8 @@ describe('MessageInputBoxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MessageInputBoxComponent]
-    })
-    .compileComponents();
+      imports: [MessageInputBoxComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MessageInputBoxComponent);
     component = fixture.componentInstance;

@@ -1,4 +1,11 @@
-import { Component, ViewChild, ElementRef, AfterViewChecked, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  AfterViewChecked,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { MessageInputBoxComponent } from '../message-input-box/message-input-box.component';
 import { MessageBoxComponent } from '../message-box/message-box.component';
 import { CommonModule } from '@angular/common';
@@ -21,9 +28,8 @@ export interface Message {
   standalone: true,
   imports: [MessageInputBoxComponent, MessageBoxComponent, CommonModule],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.css'
+  styleUrl: './chat.component.css',
 })
-
 export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
   @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
   messages: Message[] = [];
@@ -37,48 +43,67 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   constructor(
     private chatService: ChatService,
-    private sharedService: SharedService
+    private sharedService: SharedService,
   ) {}
 
   ngOnInit(): void {
     this.currentUser = getCurrentUserFromToken();
-    this.chatService.connect(this.currentUser);
-    
-    this.userSelectedSubscription = this.sharedService.userSelected$.subscribe((username) => {
-      this.startNewChat(username);
-    });
-    
-    this.messagesSubscription = this.chatService.getMessages().subscribe(message => {
-      
-      const isCurrentConversation = this.isMessageForCurrentConversation(message);
-      
-      if (!isCurrentConversation) {
-        return;
-      }
-      
-      const formattedTime = this.formatMessageTime(message.timestamp);
-      const isSender = message.senderUsername === this.currentUser;
-      
-      if (isSender) {
-        const messageIndex = this.findPendingMessage(message.content);
-        
-        if (messageIndex !== -1) {
-          this.messages[messageIndex].id = message.id?.toString();
-          this.messages[messageIndex].timestamp = formattedTime;
-          this.messages[messageIndex].status = 'delivered';
+    this.chatService.connect();
+
+    this.userSelectedSubscription = this.sharedService.userSelected$.subscribe(
+      username => {
+        this.startNewChat(username);
+      },
+    );
+
+    this.messagesSubscription = this.chatService
+      .getMessages()
+      .subscribe(message => {
+        const isCurrentConversation =
+          this.isMessageForCurrentConversation(message);
+
+        if (!isCurrentConversation) {
+          return;
+        }
+
+        const formattedTime = this.formatMessageTime(message.timestamp);
+        const isSender = message.senderUsername === this.currentUser;
+
+        if (isSender) {
+          const messageIndex = this.findPendingMessage(message.content);
+
+          if (messageIndex !== -1) {
+            this.messages[messageIndex].id = message.id?.toString();
+            this.messages[messageIndex].timestamp = formattedTime;
+            this.messages[messageIndex].status = 'delivered';
+          } else {
+            this.addNewMessage(
+              message.content,
+              formattedTime,
+              true,
+              'delivered',
+              message.id?.toString(),
+            );
+          }
         } else {
-          this.addNewMessage(message.content, formattedTime, true, 'delivered', message.id?.toString());
+          this.addNewMessage(
+            message.content,
+            formattedTime,
+            false,
+            'sent',
+            message.id?.toString(),
+          );
+
+          if (
+            message.senderUsername === this.currentChatUser &&
+            this.currentConversationData
+          ) {
+            this.markMessagesAsRead();
+          }
         }
-      } else {
-        this.addNewMessage(message.content, formattedTime, false, 'sent', message.id?.toString());
-        
-        if (message.senderUsername === this.currentChatUser && this.currentConversationData) {
-          this.markMessagesAsRead();
-        }
-      }
-      
-      this.chatService.clearConversationsCache(this.currentUser);
-    });
+
+        this.chatService.clearConversationsCache(this.currentUser);
+      });
   }
 
   ngOnDestroy(): void {
@@ -89,20 +114,25 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
       this.messagesSubscription.unsubscribe();
     }
   }
-  
+
   private isMessageForCurrentConversation(message: any): boolean {
     if (!this.currentChatUser || !message) {
       return false;
     }
-    
-    if (message.conversationId && message.conversationId === this.conversationId) {
+
+    if (
+      message.conversationId &&
+      message.conversationId === this.conversationId
+    ) {
       return true;
     }
-    
-    const isBetweenCurrentUsers = 
-      (message.senderUsername === this.currentUser && message.recipientUsername === this.currentChatUser) || 
-      (message.senderUsername === this.currentChatUser && message.recipientUsername === this.currentUser);
-    
+
+    const isBetweenCurrentUsers =
+      (message.senderUsername === this.currentUser &&
+        message.recipientUsername === this.currentChatUser) ||
+      (message.senderUsername === this.currentChatUser &&
+        message.recipientUsername === this.currentUser);
+
     return isBetweenCurrentUsers;
   }
 
@@ -112,87 +142,112 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
     this.messages = [];
     this.loadMessageHistory(recipient);
   }
-  
+
   loadMessageHistory(recipientUsername: string): void {
     this.loading = true;
-    
+
     this.chatService.getUserConversations(this.currentUser).subscribe({
-      next: (conversations) => {
-        const conversation = conversations.find(conv => conv.username === recipientUsername);
-        
+      next: conversations => {
+        const conversation = conversations.find(
+          conv => conv.username === recipientUsername,
+        );
+
         if (conversation) {
           this.currentConversationData = conversation;
-          
+
           if (conversation.id) {
             this.conversationId = conversation.id;
             this.chatService.connectToConversation(conversation.id);
           }
-          
-          this.chatService.fetchMessageHistory(this.currentUser, conversation.userId).subscribe({
-            next: (messages) => {
-              this.messages = [];
-              
-              if (messages.length > 0 && messages[0].conversationId && 
-                  this.conversationId !== messages[0].conversationId) {
-                this.conversationId = messages[0].conversationId;
-                this.chatService.connectToConversation(messages[0].conversationId);
-              }
-              
-              messages.forEach(message => {
-                const formattedTime = this.formatMessageTime(message.timestamp);
-                const isSender = message.senderUsername === this.currentUser;
-                
-                this.addNewMessage(
-                  message.content, 
-                  formattedTime, 
-                  isSender, 
-                  'delivered', 
-                  message.id?.toString()
+
+          this.chatService
+            .fetchMessageHistory(this.currentUser, conversation.userId)
+            .subscribe({
+              next: messages => {
+                this.messages = [];
+
+                if (
+                  messages.length > 0 &&
+                  messages[0].conversationId &&
+                  this.conversationId !== messages[0].conversationId
+                ) {
+                  this.conversationId = messages[0].conversationId;
+                  this.chatService.connectToConversation(
+                    messages[0].conversationId,
+                  );
+                }
+
+                messages.forEach(message => {
+                  const formattedTime = this.formatMessageTime(
+                    message.timestamp,
+                  );
+                  const isSender = message.senderUsername === this.currentUser;
+
+                  this.addNewMessage(
+                    message.content,
+                    formattedTime,
+                    isSender,
+                    'delivered',
+                    message.id?.toString(),
+                  );
+                });
+
+                this.loading = false;
+                setTimeout(() => this.scrollToBottom(), 0);
+
+                if (conversation.unread) {
+                  this.markMessagesAsRead();
+                }
+              },
+              error: error => {
+                console.error(
+                  'Erro ao carregar histórico de mensagens:',
+                  error,
                 );
-              });
-              
-              this.loading = false;
-              setTimeout(() => this.scrollToBottom(), 0);
-              
-              if (conversation.unread) {
-                this.markMessagesAsRead();
-              }
-            },
-            error: (error) => {
-              console.error('Erro ao carregar histórico de mensagens:', error);
-              this.loading = false;
-            }
-          });
+                this.loading = false;
+              },
+            });
         } else {
           this.messages = [];
           this.currentConversationData = null;
           this.loading = false;
         }
       },
-      error: (error) => {
+      error: error => {
         console.error('Erro ao buscar informações da conversa:', error);
         this.loading = false;
-      }
+      },
     });
   }
 
   handleMessageSent(newMessage: { message: string; timestamp: string }) {
     const tempId = this.generateTempId();
-    
-    this.addNewMessage(newMessage.message, newMessage.timestamp, true, 'sending', undefined, tempId);
 
-    this.chatService.sendMessage(this.currentUser, this.currentChatUser, newMessage.message);
-    
+    this.addNewMessage(
+      newMessage.message,
+      newMessage.timestamp,
+      true,
+      'sending',
+      undefined,
+      tempId,
+    );
+
+    this.chatService.sendMessage(
+      this.currentUser,
+      this.currentChatUser,
+      newMessage.message,
+    );
+
     this.chatService.clearConversationsCache(this.currentUser);
   }
 
   private addNewMessage(
-    content: string, 
-    timestamp: string, 
-    sent: boolean, 
-    status: 'sending' | 'sent' | 'delivered' = 'sent', 
+    content: string,
+    timestamp: string,
+    sent: boolean,
+    status: 'sending' | 'sent' | 'delivered' = 'sent',
     id?: string,
-    tempId?: string
+    tempId?: string,
   ): void {
     const message: Message = {
       id,
@@ -200,9 +255,9 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
       content,
       timestamp,
       sent,
-      status
+      status,
     };
-    
+
     this.messages.push(message);
   }
 
@@ -212,9 +267,12 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   private findPendingMessage(content: string): number {
     for (let i = this.messages.length - 1; i >= 0; i--) {
-      if (this.messages[i].sent && 
-          this.messages[i].content === content && 
-          (this.messages[i].status === 'sending' || this.messages[i].status === 'sent')) {
+      if (
+        this.messages[i].sent &&
+        this.messages[i].content === content &&
+        (this.messages[i].status === 'sending' ||
+          this.messages[i].status === 'sent')
+      ) {
         return i;
       }
     }
@@ -235,16 +293,19 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
     if (!timestamp) {
       return this.getCurrentTimeFormatted();
     }
-    
+
     try {
       const date = new Date(timestamp);
-      
+
       if (isNaN(date.getTime())) {
         throw new Error('Data inválida');
       }
-      
+
       // Formato: HH:MM
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     } catch (e) {
       console.error('Erro ao formatar timestamp:', e);
       return this.getCurrentTimeFormatted();
@@ -253,14 +314,17 @@ export class ChatComponent implements AfterViewChecked, OnInit, OnDestroy {
 
   private markMessagesAsRead(): void {
     if (!this.currentConversationData) return;
-    
+
     const currentUserId = getCurrentUserId();
     if (!currentUserId) {
       console.error('ID do usuário não encontrado no token');
       return;
     }
-    
-    this.chatService.markMessagesAsRead(this.currentConversationData.id, currentUserId)
+
+    this.chatService.markMessagesAsRead(
+      this.currentConversationData.id,
+      currentUserId,
+    );
   }
 
   private getCurrentTimeFormatted(): string {

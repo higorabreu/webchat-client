@@ -1,103 +1,121 @@
 <div class="flex items-center justify-center h-screen">
-    <div class="w-full max-w-4xl p-8 bg-secondary rounded-lg shadow-lg">
-        <div class="flex flex-col md:flex-row md:justify-center items-center pb-8">
-            <div class="flex flex-row items-center md:pr-4 md:border-r border-b md:border-b-0">
-                <h1 class="text-3xl font-light text-white">Web</h1>
-                <h1 class="text-3xl font-bold text-white">Chat</h1>
-                <img class="h-8 w-auto filter-white" src="icons/chat.svg" alt="Chat Icon">
-            </div>
-            <h1 class="text-2xl md:text-3xl font-light text-center text-zinc-300 md:pl-4">
-                Register
-            </h1>
-        </div>
-  
-        <form class="space-y-6" (ngSubmit)="register()">
-            <div class="flex flex-wrap gap-4">
-            <!-- Username Input -->
-            <div class="flex-1 min-w-[250px]">
-                <label for="username" class="block text-zinc-300 text-sm">Username</label>
-                <input
-                name="username"
-                [(ngModel)]="username"
-                type="text"
-                class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
-                placeholder="Enter your username"
-                maxlength="12"
-                />
-            </div>
-    
-            <!-- Full Name Input -->
-            <div class="flex-1 min-w-[250px]">
-                <label for="full-name" class="block text-zinc-300 text-sm">Full Name</label>
-                <input
-                name="full-name"
-                [(ngModel)]="name"
-                type="text"
-                class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
-                placeholder="Enter your full name"
-                maxlength="30"
-                />
-            </div>
-            </div>
-    
-            <div class="flex flex-wrap gap-4">
-            <!-- Email Input (-->
-            <div class="flex-1 min-w-[250px] md:min-w-[500px]">
-                <label for="email" class="block text-zinc-300 text-sm">Email</label>
-                <input
-                name="email"
-                [(ngModel)]="email"
-                type="email"
-                class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
-                placeholder="Enter your email"
-                maxlength="30"
-                />
-            </div>
-            </div>
-    
-            <div class="flex flex-wrap gap-4">
-            <!-- Password Input -->
-            <div class="flex-1 min-w-[250px]">
-                <label for="password" class="block text-zinc-300 text-sm">Password</label>
-                <input
-                name="password"
-                [(ngModel)]="password"
-                type="password"
-                class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
-                placeholder="Enter your password"
-                maxlength="12"
-                />
-            </div>
-    
-            <!-- Confirm Password Input -->
-            <div class="flex-1 min-w-[250px]">
-                <label for="confirm-password" class="block text-zinc-300 text-sm">Confirm Password</label>
-                <input
-                name="confirm-password"
-                [(ngModel)]="confirmPassword"
-                type="password"
-                class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
-                placeholder="Confirm your password"
-                maxlength="12"
-                />
-            </div>
-            </div>
-
-            <p *ngIf="message" class="text-green-500 text-sm">{{ message }}</p>
-            <p *ngIf="errorMessage" class="text-red-500 text-sm">{{ errorMessage }}</p>
-    
-            <!-- Submit Button -->
-            <button
-            type="submit"
-            class="w-full py-3 bg-tertiary text-white rounded-md hover:bg-sky-700 transition duration-300"
-            >
-            Register
-            </button>
-      </form>
-  
-      <p class="mt-4 text-center text-gray-500 text-sm">
-        Already have an account? <a href="/login" class="text-tertiary hover:underline">Login here</a>
-      </p>
+  <div class="w-full max-w-4xl p-8 bg-secondary rounded-lg shadow-lg">
+    <div class="flex flex-col md:flex-row md:justify-center items-center pb-8">
+      <div
+        class="flex flex-row items-center md:pr-4 md:border-r border-b md:border-b-0"
+      >
+        <h1 class="text-3xl font-light text-white">Web</h1>
+        <h1 class="text-3xl font-bold text-white">Chat</h1>
+        <img
+          class="h-8 w-auto filter-white"
+          src="icons/chat.svg"
+          alt="Chat Icon"
+        />
+      </div>
+      <h1
+        class="text-2xl md:text-3xl font-light text-center text-zinc-300 md:pl-4"
+      >
+        Register
+      </h1>
     </div>
+
+    <form class="space-y-6" (ngSubmit)="register()">
+      <div class="flex flex-wrap gap-4">
+        <!-- Username Input -->
+        <div class="flex-1 min-w-[250px]">
+          <label for="username" class="block text-zinc-300 text-sm"
+            >Username</label
+          >
+          <input
+            name="username"
+            [(ngModel)]="username"
+            type="text"
+            class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
+            placeholder="Enter your username"
+            maxlength="12"
+          />
+        </div>
+
+        <!-- Full Name Input -->
+        <div class="flex-1 min-w-[250px]">
+          <label for="full-name" class="block text-zinc-300 text-sm"
+            >Full Name</label
+          >
+          <input
+            name="full-name"
+            [(ngModel)]="name"
+            type="text"
+            class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
+            placeholder="Enter your full name"
+            maxlength="30"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4">
+        <!-- Email Input (-->
+        <div class="flex-1 min-w-[250px] md:min-w-[500px]">
+          <label for="email" class="block text-zinc-300 text-sm">Email</label>
+          <input
+            name="email"
+            [(ngModel)]="email"
+            type="email"
+            class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
+            placeholder="Enter your email"
+            maxlength="30"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-4">
+        <!-- Password Input -->
+        <div class="flex-1 min-w-[250px]">
+          <label for="password" class="block text-zinc-300 text-sm"
+            >Password</label
+          >
+          <input
+            name="password"
+            [(ngModel)]="password"
+            type="password"
+            class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
+            placeholder="Enter your password"
+            maxlength="12"
+          />
+        </div>
+
+        <!-- Confirm Password Input -->
+        <div class="flex-1 min-w-[250px]">
+          <label for="confirm-password" class="block text-zinc-300 text-sm"
+            >Confirm Password</label
+          >
+          <input
+            name="confirm-password"
+            [(ngModel)]="confirmPassword"
+            type="password"
+            class="w-full p-3 bg-secondary border border-zinc-300/[20%] text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-tertiary"
+            placeholder="Confirm your password"
+            maxlength="12"
+          />
+        </div>
+      </div>
+
+      <p *ngIf="message" class="text-green-500 text-sm">{{ message }}</p>
+      <p *ngIf="errorMessage" class="text-red-500 text-sm">
+        {{ errorMessage }}
+      </p>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="w-full py-3 bg-tertiary text-white rounded-md hover:bg-sky-700 transition duration-300"
+      >
+        Register
+      </button>
+    </form>
+
+    <p class="mt-4 text-center text-gray-500 text-sm">
+      Already have an account?
+      <a href="/login" class="text-tertiary hover:underline">Login here</a>
+    </p>
   </div>
-  
+</div>

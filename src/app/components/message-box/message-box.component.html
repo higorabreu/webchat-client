@@ -1,44 +1,80 @@
-<div 
-    class="flex mb-2" 
-    [ngClass]="{ 
-        'justify-end': isSent, 
-        'justify-start': !isSent }">
-    <div 
-        class="flex flex-col relative p-4 rounded-lg shadow-md max-w-[90%] sm:max-w-[60%] text-white" 
-        [ngClass]="{ 
-            'bg-tertiary': isSent, 
-            'bg-gray-600': !isSent,
-            'rounded-br-none': isSent, 
-            'rounded-bl-none': !isSent }">
+<div
+  class="flex mb-2"
+  [ngClass]="{
+    'justify-end': isSent,
+    'justify-start': !isSent,
+  }"
+>
+  <div
+    class="flex flex-col relative p-4 rounded-lg shadow-md max-w-[90%] sm:max-w-[60%] text-white"
+    [ngClass]="{
+      'bg-tertiary': isSent,
+      'bg-gray-600': !isSent,
+      'rounded-br-none': isSent,
+      'rounded-bl-none': !isSent,
+    }"
+  >
+    <p class="break-words">{{ message }}</p>
 
-        <p class="break-words">{{ message }}</p>
+    <div
+      class="flex items-center"
+      [ngClass]="{
+        'justify-end': isSent,
+        'justify-start': !isSent,
+      }"
+    >
+      <span class="text-xs text-white/75 mr-1">
+        {{ timestamp }}
+      </span>
 
-        <div 
-            class="flex items-center" 
-            [ngClass]="{ 
-                'justify-end': isSent, 
-                'justify-start': !isSent }">
-            <span 
-                class="text-xs text-white/75 mr-1">
-                {{ timestamp }}
-            </span>
-            
-            <span *ngIf="isSent" class="text-xs ml-1">
-                <ng-container [ngSwitch]="status">
-                    <svg *ngSwitchCase="'sending'" class="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    
-                    <svg *ngSwitchCase="'sent'" class="w-3 h-3 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    
-                    <svg *ngSwitchCase="'delivered'" class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                </ng-container>
-            </span>
-        </div>
+      <span *ngIf="isSent" class="text-xs ml-1">
+        <ng-container [ngSwitch]="status">
+          <svg
+            *ngSwitchCase="'sending'"
+            class="w-3 h-3 text-white/50"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
 
+          <svg
+            *ngSwitchCase="'sent'"
+            class="w-3 h-3 text-white/70"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+
+          <svg
+            *ngSwitchCase="'delivered'"
+            class="w-3 h-3 text-green-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+        </ng-container>
+      </span>
     </div>
+  </div>
 </div>

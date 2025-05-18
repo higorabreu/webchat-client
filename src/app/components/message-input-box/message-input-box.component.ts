@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Output, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,23 +13,29 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './message-input-box.component.html',
-  styleUrls: ['./message-input-box.component.css']
+  styleUrls: ['./message-input-box.component.css'],
 })
 export class MessageInputBoxComponent {
   @ViewChild('messageBox') messageBox!: ElementRef;
   message: string = '';
   timestamp: string = '';
 
-  @Output() messageSent = new EventEmitter<{ message: string, timestamp: string }>();
+  @Output() messageSent = new EventEmitter<{
+    message: string;
+    timestamp: string;
+  }>();
 
   sendMessage() {
     if (this.message.trim()) {
       const now = new Date();
-      this.timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      this.timestamp = now.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
 
-      this.messageSent.emit({ 
-        message: this.message.trim(), 
-        timestamp: this.timestamp 
+      this.messageSent.emit({
+        message: this.message.trim(),
+        timestamp: this.timestamp,
       });
       this.message = '';
       this.resetHeight();

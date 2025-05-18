@@ -10,7 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
   templateUrl: './login.component.html',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
   username: string = '';
@@ -18,25 +18,28 @@ export class LoginComponent {
   message: string = '';
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   login() {
     this.authService.login(this.username, this.password).subscribe({
-      next: (response) => {
+      next: response => {
         localStorage.setItem('token', response.access_token);
-        localStorage.setItem('username', this.username)
-        this.message = "Login successful!";
+        localStorage.setItem('username', this.username);
+        this.message = 'Login successful!';
         this.router.navigate(['/']);
       },
-      error: (err) => {
+      error: err => {
         if (err.status === 404) {
-          this.errorMessage = "User not found.";
+          this.errorMessage = 'User not found.';
         } else if (err.status === 401) {
-          this.errorMessage = "Invalid password.";
+          this.errorMessage = 'Invalid password.';
         } else {
-          this.errorMessage = "Failed to login.";
+          this.errorMessage = 'Failed to login.';
         }
-      }
+      },
     });
   }
 }

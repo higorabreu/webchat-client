@@ -10,7 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
   templateUrl: './register.component.html',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
-  styleUrls: ['./register.component.css']
+  styleUrls: ['./register.component.css'],
 })
 export class RegisterComponent {
   username: string = '';
@@ -21,9 +21,12 @@ export class RegisterComponent {
   message: string = '';
   errorMessage: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
-  checkPasswords() : boolean {
+  checkPasswords(): boolean {
     return this.password === this.confirmPassword;
   }
 
@@ -33,18 +36,20 @@ export class RegisterComponent {
       return;
     }
 
-    this.authService.register(this.username, this.name, this.email, this.password).subscribe({
-      next: () => {
-        this.message = "Registration successful!";
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        if (err.status === 409) {
-          this.errorMessage = "Email or Username already registered.";
-        } else {
-          this.errorMessage = "Failed to register user.";
-        }
-      }
-    });
+    this.authService
+      .register(this.username, this.name, this.email, this.password)
+      .subscribe({
+        next: () => {
+          this.message = 'Registration successful!';
+          this.router.navigate(['/login']);
+        },
+        error: err => {
+          if (err.status === 409) {
+            this.errorMessage = 'Email or Username already registered.';
+          } else {
+            this.errorMessage = 'Failed to register user.';
+          }
+        },
+      });
   }
 }

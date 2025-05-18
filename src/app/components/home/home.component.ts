@@ -8,8 +8,6 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
   standalone: true,
   imports: [ChatComponent, HeaderComponent, SidebarComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.css',
 })
-export class HomeComponent {
-
-}
+export class HomeComponent {}

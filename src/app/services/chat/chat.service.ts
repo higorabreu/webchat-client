@@ -16,7 +16,7 @@ export interface Conversation {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService implements OnDestroy {
   private stompClient: Stomp.Client | null = null;
@@ -29,7 +29,7 @@ export class ChatService implements OnDestroy {
 
   constructor(private http: HttpClient) {}
 
-  connect(user: string): void {
+  connect(): void {
     if (this.stompClient && this.stompClient.connected) {
       this.isConnected = true;
       return;
@@ -38,16 +38,10 @@ export class ChatService implements OnDestroy {
     this.stompClient = new Stomp.Client({
       brokerURL: 'ws://localhost:8080/ws',
       connectHeaders: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
       onConnect: () => {
         this.isConnected = true;
-      },
-      onStompError: (frame) => {
-        console.error('Erro ao conectar ao WebSocket:', frame);
-      },
-      onWebSocketError: (event) => {
-        console.error('Erro ao conectar ao WebSocket:', event);
       },
     });
 
@@ -60,16 +54,13 @@ export class ChatService implements OnDestroy {
     }
 
     if (!this.stompClient || !this.stompClient.connected) {
-      const currentUser = getCurrentUserFromToken();
-      if (currentUser) {
-        this.connect(currentUser);
-      
-        setTimeout(() => {
-          this.subscribeToMessages(conversationId);
-        }, 1000);
-      }
-      return;
+      this.connect();
+
+      setTimeout(() => {
+        this.subscribeToMessages(conversationId);
+      }, 1000);
     }
+    return;
 
     this.subscribeToMessages(conversationId);
   }
@@ -78,19 +69,19 @@ export class ChatService implements OnDestroy {
     if (!this.stompClient?.connected) {
       return;
     }
-    
+
     if (this.activeSubscriptions.has(conversationId)) {
       return;
     }
-    
+
     const destination = `/user/queue/messages/${conversationId}`;
-    
+
     this.stompClient.subscribe(destination, (message: any) => {
       const parsedMessage = JSON.parse(message.body);
       parsedMessage.conversationId = conversationId;
       this.messagesSubject.next(parsedMessage);
     });
-    
+
     this.activeSubscriptions.add(conversationId);
   }
 
@@ -98,7 +89,7 @@ export class ChatService implements OnDestroy {
     if (!this.isConnected) {
       return;
     }
-    
+
     conversations.forEach(conversation => {
       if (conversation.id) {
         this.subscribeToMessages(conversation.id);
@@ -110,20 +101,20 @@ export class ChatService implements OnDestroy {
     if (!this.stompClient?.connected) {
       return;
     }
-    
+
     const message = {
       sender: sender,
       recipient: recipient,
       content: text,
       senderUsername: sender,
       recipientUsername: recipient,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
-    
+
     this.stompClient.publish({
       destination: '/app/chat.send',
       headers: {
-        Authorization: `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
       body: JSON.stringify(message),
     });
@@ -132,25 +123,28 @@ export class ChatService implements OnDestroy {
   getMessages(): Observable<any> {
     return this.messagesSubject.asObservable();
   }
-  
+
   fetchMessageHistory(user1: string, user2: string): Observable<any[]> {
     const currentUserId = getCurrentUserId();
-    
+
     if (!currentUserId) {
       return new Observable(subscriber => subscriber.complete());
     }
-    
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
-    
+
+    const headers = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${this.token}`,
+    );
+
     return this.http.get<any[]>(`${this.apiUrl}/messages`, {
       headers: headers,
       params: {
         user1Id: currentUserId,
-        user2Id: user2
-      }
+        user2Id: user2,
+      },
     });
   }
-  
+
   getUserConversations(username: string): Observable<Conversation[]> {
     if (this.conversationsCache.has(username)) {
       return new Observable(subscriber => {
@@ -158,32 +152,45 @@ export class ChatService implements OnDestroy {
         subscriber.complete();
       });
     }
-    
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
-    
+
+    const headers = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${this.token}`,
+    );
+
     return new Observable(subscriber => {
-      this.http.get<Conversation[]>(`${this.apiUrl}/conversations/${username}`, { headers }).subscribe({
-        next: (conversations) => {
-          this.conversationsCache.set(username, conversations);
-          subscriber.next(conversations);
-          subscriber.complete();
-        },
-        error: (error) => {
-          subscriber.error(error);
-        }
-      });
+      this.http
+        .get<
+          Conversation[]
+        >(`${this.apiUrl}/conversations/${username}`, { headers })
+        .subscribe({
+          next: conversations => {
+            this.conversationsCache.set(username, conversations);
+            subscriber.next(conversations);
+            subscriber.complete();
+          },
+          error: error => {
+            subscriber.error(error);
+          },
+        });
     });
   }
 
-  markMessagesAsRead(conversationId: string, currentUserId: string): Observable<any> {
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${this.token}`);
-    
+  markMessagesAsRead(
+    conversationId: string,
+    currentUserId: string,
+  ): Observable<any> {
+    const headers = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${this.token}`,
+    );
+
     return this.http.post<any>(`${this.apiUrl}/messages/read`, null, {
       headers: headers,
       params: {
         conversationId: conversationId,
-        userId: currentUserId
-      }
+        userId: currentUserId,
+      },
     });
   }
 

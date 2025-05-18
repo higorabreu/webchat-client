@@ -1,19 +1,39 @@
-<div id="item" class="flex items-center justify-between gap-8 p-4 hover:bg-gray-800 cursor-pointer border-b-1 border-secondary" (click)="onClick()">
-    <div class="flex items-center">
-        <div id="profile-photo" class="w-10 h-10 rounded-full bg-gray-400 flex-shrink-0"></div>
-        <div class="ml-1">
-            <h3 id="name" class="text-white font-medium truncate">{{ name }}</h3>
-            <span id="username" class="text-xs text-gray-400">{{ username }}</span>
-        </div>
+<div
+  id="item"
+  class="flex items-center justify-between gap-8 p-4 hover:bg-gray-800 cursor-pointer border-b-1 border-secondary"
+  (click)="onClick()"
+>
+  <div class="flex items-center">
+    <div
+      id="profile-photo"
+      class="w-10 h-10 rounded-full bg-gray-400 flex-shrink-0"
+    ></div>
+    <div class="ml-1">
+      <h3 id="name" class="text-white font-medium truncate">{{ name }}</h3>
+      <span id="username" class="text-xs text-gray-400">{{ username }}</span>
     </div>
-    <div class="flex items-center space-x-2">
-        <span id="message" class="text-gray-400 text-sm truncate max-w-[150px] whitespace-nowrap hidden md:block">
-            <ng-container *ngIf="message">
-                <span class="font-bold">{{ isLastMessageFromCurrentUser ? 'Você' : name }}:</span> {{ message }}
-            </ng-container>
-        </span>
-        <svg *ngIf="unread" class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-10V6a1 1 0 112 0v4a1 1 0 01-.293.707l-3 3a1 1 0 01-1.414-1.414l2.707-2.707z"/>
-        </svg>
-    </div>
+  </div>
+  <div class="flex items-center space-x-2">
+    <span
+      id="message"
+      class="text-gray-400 text-sm truncate max-w-[150px] whitespace-nowrap hidden md:block"
+    >
+      <ng-container *ngIf="message">
+        <span class="font-bold"
+          >{{ isLastMessageFromCurrentUser ? 'Você' : name }}:</span
+        >
+        {{ message }}
+      </ng-container>
+    </span>
+    <svg
+      *ngIf="unread"
+      class="w-4 h-4 text-blue-500"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path
+        d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-10V6a1 1 0 112 0v4a1 1 0 01-.293.707l-3 3a1 1 0 01-1.414-1.414l2.707-2.707z"
+      />
+    </svg>
+  </div>
 </div>

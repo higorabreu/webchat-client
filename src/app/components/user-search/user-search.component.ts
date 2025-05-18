@@ -9,7 +9,7 @@ import { SharedService } from '../../services/shared/shared.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './user-search.component.html',
-  styleUrls: ['./user-search.component.css']
+  styleUrls: ['./user-search.component.css'],
 })
 export class UserSearchComponent {
   username: string = '';
@@ -19,20 +19,20 @@ export class UserSearchComponent {
 
   constructor(
     private userService: UserService,
-    private sharedService: SharedService
+    private sharedService: SharedService,
   ) {}
 
   selectUser() {
     if (this.username.trim()) {
       this.userService.userExists(this.username).subscribe(
-        (exists) => {
+        exists => {
           this.userExists = exists;
           this.sharedService.selectUser(this.username);
           this.resetInput();
         },
-        (error) => {
+        error => {
           this.userExists = null;
-        }
+        },
       );
     } else {
       this.userExists = null;
